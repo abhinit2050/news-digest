@@ -1,60 +1,116 @@
-import requests
+import feedparser
 import os
+import json
 from dotenv import load_dotenv
 from groq import Groq
 
 load_dotenv()
 
-API_KEY = os.getenv("NEWS_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+groq_client = Groq(api_key=GROQ_API_KEY)
 
-groq_client = Groq(api_key=GROQ_API_KEY);
+FEEDS = {
+    "general": [
+        "https://feeds.feedburner.com/ndtvnews-top-stories",
+        "https://www.thehindu.com/news/national/feeder/default.rss",
+    ],
+    "business": [
+        "https://www.livemint.com/rss/money",
+        "https://economictimes.indiatimes.com/rssfeedsdefault.cms",
+    ],
+    "science & tech": [
+        "https://inc42.com/feed/",
+        "https://techcrunch.com/feed/",
+        "https://www.thehindu.com/sci-tech/feeder/default.rss",
+    ],
+    "sports": [
+        "https://www.thehindu.com/sport/feeder/default.rss",
+        "https://www.espncricinfo.com/rss/content/story/feeds/0.xml",
+    ]
+}
 
-CATEGORIES = ["general", "business", "science", "sports"]
-ARTICLES_PER_CATEGORY = 3
+ARTICLES_TO_FETCH = 10
+ARTICLES_TO_KEEP = 2
+
+def pick_best_articles(articles, category):
+    numbered = ""
+    for i, a in enumerate(articles):
+        numbered += f"{i+1}. {a['title']}\n"
+
+    prompt = f"""You are a news curator for an Indian reader interested in {category} news.
+Here are {len(articles)} recent articles. Pick the {ARTICLES_TO_KEEP} most important and interesting ones.
+
+Rules:
+- If there was a major event, ensure that the news with the result of the event, if any, is selected
+- No two articles should be about the same event, match or topic
+- Prefer variety and diversity of stories
+- Prioritise stories that are significant and not repetitive
+
+Return ONLY a JSON array of the numbers you picked. Example: [2, 7]
+Do not explain. Just return the JSON array.
+
+Articles:
+{numbered}"""
+
+    chat = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    response = chat.choices[0].message.content.strip()
+    indices = json.loads(response)
+    return [articles[i - 1] for i in indices]
 
 def summarise_article(title, description):
     prompt = f"Summarise this news article in 2 sentences, simply and clearly:\nTitle: {title}\nDescription: {description}"
-    
+
     chat = groq_client.chat.completions.create(
-       model="llama-3.3-70b-versatile",
+        model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}]
     )
-    return chat.choices[0].message.content;
+
+    return chat.choices[0].message.content
 
 def fetch_news():
     all_articles = []
-    
-    for category in CATEGORIES:
-        url = "https://newsapi.org/v2/everything"
-        params = {
-            "apiKey": API_KEY,
-            "q": f"india {category}",
-            "language": "en",
-            "pageSize": ARTICLES_PER_CATEGORY,
-            "sortBy": "publishedAt"
-        }
-        
-        response = requests.get(url, params=params)
-        data = response.json()
-        
-        if data["status"] == "ok":
-            print(f"\n--- {category.upper()} ---")
-            for article in data["articles"]:
-                title = article["title"]
-                description = article.get("description", "")
-                summary = summarise_article(title, description)
-                print(f"\nTitle: {title}")
-                print(f"Summary: {summary}")
-                all_articles.append({
+
+    for category, feed_urls in FEEDS.items():
+        print(f"\n--- {category.upper()} ---")
+
+        for feed_url in feed_urls:
+            feed = feedparser.parse(feed_url)
+            candidates = []
+
+            for entry in feed.entries[:ARTICLES_TO_FETCH]:
+                title = entry.get("title", "")
+                description = entry.get("summary", "")
+                url = entry.get("link", "")
+
+                if not title:
+                    continue
+
+                candidates.append({
                     "category": category,
                     "title": title,
+                    "description": description,
+                    "url": url
+                })
+
+            if not candidates:
+                continue
+
+            best = pick_best_articles(candidates, category)
+
+            for article in best:
+                summary = summarise_article(article["title"], article["description"])
+                print(f"\nTitle: {article['title']}")
+                print(f"Summary: {summary}")
+
+                all_articles.append({
+                    "category": category,
+                    "title": article["title"],
                     "summary": summary,
                     "url": article["url"]
                 })
-        else:
-            print(f"Error fetching {category}: {data}")
-    
-    return all_articles
 
-fetch_news()
+    return all_articles 
