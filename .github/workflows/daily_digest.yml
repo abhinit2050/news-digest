@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv groq
+          pip install requests python-dotenv groq feedparser
 
       - name: Run digest
         env:
