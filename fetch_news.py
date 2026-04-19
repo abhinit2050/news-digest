@@ -3,6 +3,8 @@ import os
 import json
 from dotenv import load_dotenv
 from groq import Groq
+from datetime import datetime, timezone
+import time
 
 load_dotenv()
 
@@ -86,8 +88,16 @@ def fetch_news():
                 description = entry.get("summary", "")
                 url = entry.get("link", "")
 
-                if not title:
+                if not title or not description or len(description.strip()) < 20:
                     continue
+                
+                published = entry.get("published_parsed") or entry.get("updated_parsed")
+                if published:
+                    published_dt = datetime(*published[:6], tzinfo=timezone.utc)
+                    age_hours = (datetime.now(timezone.utc) - published_dt).total_seconds() / 3600
+                    if age_hours > 24:
+                        continue
+
 
                 candidates.append({
                     "category": category,
