@@ -73,6 +73,34 @@ def summarise_article(title, description):
 
     return chat.choices[0].message.content
 
+def remove_duplicates(articles):
+    if len(articles) <= 1:
+        return articles
+
+    numbered = ""
+    for i, a in enumerate(articles):
+        numbered += f"{i+1}. {a['title']}\n"
+
+    prompt = f"""Here is a list of news article titles:
+{numbered}
+Some of these may cover the exact same event or story from different angles.
+Return ONLY a JSON array of numbers to KEEP, removing any that are about the same event.
+Keep the more informative one when duplicates exist.
+Example: [1, 3, 5]
+Do not explain. Just return the JSON array."""
+
+    chat = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    response = chat.choices[0].message.content.strip()
+    try:
+        indices = json.loads(response)
+        return [articles[i - 1] for i in indices]
+    except:
+        return articles
+
 def fetch_news():
     all_articles = []
 
@@ -110,6 +138,7 @@ def fetch_news():
                 continue
 
             best = pick_best_articles(candidates, category)
+            best = remove_duplicates(best);
 
             for article in best:
                 summary = summarise_article(article["title"], article["description"])
