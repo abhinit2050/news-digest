@@ -26,7 +26,6 @@ FEEDS = {
         "https://www.thehindu.com/sci-tech/feeder/default.rss",
     ],
     "sports": [
-        "https://www.thehindu.com/sport/feeder/default.rss",
         "https://www.espncricinfo.com/rss/content/story/feeds/0.xml",
     ]
 }
