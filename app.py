@@ -47,9 +47,10 @@ def send_confirmation_email(to_email, name):
     msg["To"] = to_email
     msg.attach(MIMEText(html, "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
-        server.sendmail(os.getenv("SENDER_EMAIL"), to_email, msg.as_string())
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+    server.starttls()
+    server.login(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
+    server.sendmail(os.getenv("SENDER_EMAIL"), to_email, msg.as_string())
         print(f"Confirmation email sent to {to_email}")
 
 

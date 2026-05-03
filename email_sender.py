@@ -100,9 +100,10 @@ def send_email(to_email, name, articles):
 
     msg.attach(MIMEText(html_content, "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+    server.starttls()
+    server.login(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
+    server.sendmail(os.getenv("SENDER_EMAIL"), to_email, msg.as_string())
         print(f"Email sent to {to_email}")
 
 def main():
