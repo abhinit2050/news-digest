@@ -35,7 +35,7 @@ def send_confirmation_email(to_email, name):
             <h1 style="font-size:24px;color:#1a1a1a;margin-bottom:8px;">📰 Welcome, {name}!</h1>
             <p style="font-size:15px;color:#555555;line-height:1.6;margin-bottom:16px;">You're now subscribed to Morning Digest. Every day at 8AM IST, you'll receive a curated AI-powered news digest based on your chosen categories.</p>
             <p style="font-size:15px;color:#555555;line-height:1.6;margin-bottom:32px;">Sit back and enjoy your morning news — we'll take care of the rest!</p>
-            <p style="font-size:11px;color:#aaaaaa;text-align:center;">Changed your mind? <a href="https://your-render-url.onrender.com/unsubscribe" style="color:#aaaaaa;">Unsubscribe here</a></p>
+            <p style="font-size:11px;color:#aaaaaa;text-align:center;">Changed your mind? <a href="https://news-digest-ieh6.onrender.com/unsubscribe" style="color:#aaaaaa;">Unsubscribe here</a></p>
         </div>
     </body>
     </html>
