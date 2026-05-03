@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from supabase import create_client
 from flask import Flask, request, jsonify, render_template
 import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 load_dotenv()
 
@@ -22,6 +25,33 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_SERVICE_KEY")
 )
+
+def send_confirmation_email(to_email, name):
+    html = f"""
+    <html>
+    <body style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:24px;background:#f9f9f9;">
+        <div style="background:#ffffff;border-radius:8px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <h1 style="font-size:24px;color:#1a1a1a;margin-bottom:8px;">📰 Welcome, {name}!</h1>
+            <p style="font-size:15px;color:#555555;line-height:1.6;margin-bottom:16px;">You're now subscribed to Morning Digest. Every day at 8AM IST, you'll receive a curated AI-powered news digest based on your chosen categories.</p>
+            <p style="font-size:15px;color:#555555;line-height:1.6;margin-bottom:32px;">Sit back and enjoy your morning news — we'll take care of the rest!</p>
+            <p style="font-size:11px;color:#aaaaaa;text-align:center;">Changed your mind? <a href="https://your-render-url.onrender.com/unsubscribe" style="color:#aaaaaa;">Unsubscribe here</a></p>
+        </div>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "📰 Welcome to Morning Digest!"
+    msg["From"] = os.getenv("SENDER_EMAIL")
+    msg["To"] = to_email
+    msg.attach(MIMEText(html, "html"))
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
+        server.sendmail(os.getenv("SENDER_EMAIL"), to_email, msg.as_string())
+        print(f"Confirmation email sent to {to_email}")
+
+
 
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
@@ -52,6 +82,7 @@ def subscribe():
         "is_active": True
     }).execute()
 
+    send_confirmation_email(email, name)
     return jsonify({"message": f"Welcome {name}! You're now subscribed."}), 201
 
 
