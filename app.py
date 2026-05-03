@@ -7,6 +7,7 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import threading
 
 load_dotenv()
 
@@ -82,7 +83,8 @@ def subscribe():
         "is_active": True
     }).execute()
 
-    send_confirmation_email(email, name)
+    thread = threading.Thread(target=send_confirmation_email, args=(email, name))
+    thread.start()
     return jsonify({"message": f"Welcome {name}! You're now subscribed."}), 201
 
 
