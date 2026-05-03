@@ -79,7 +79,7 @@ def build_html(articles, name):
             <h1 style="font-size:24px;color:#1a1a1a;margin-bottom:4px;">📰 Good morning, {name}!</h1>
             <p style="font-size:13px;color:#888888;margin-bottom:32px;">Here's your personalised news digest for today</p>
             {sections}
-            <p style="font-size:11px;color:#aaaaaa;margin-top:32px;text-align:center;">Powered by NewsAPI + Groq AI · <a href="http://127.0.0.1:5000/unsubscribe" style="color:#aaaaaa;">Unsubscribe</a></p>
+            <p style="font-size:11px;color:#aaaaaa;margin-top:32px;text-align:center;">Powered by NewsAPI + Groq AI · <a href="https://news-digest-ieh6.onrender.com/unsubscribe" style="color:#aaaaaa;">Unsubscribe</a></p>
         </div>
     </body>
     </html>
