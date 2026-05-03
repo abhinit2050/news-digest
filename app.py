@@ -14,6 +14,10 @@ CORS(app)
 def index():
     return render_template("index.html")
 
+@app.route("/unsubscribe")
+def unsubscribe_page():
+    return render_template("unsubscribe.html")
+
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_SERVICE_KEY")

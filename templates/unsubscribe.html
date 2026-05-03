@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Digest — Unsubscribe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .card {
+            background: linear-gradient(160deg, #e8f0fe 0%, #c5cae9 100%);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888888;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #444444;
+            margin-bottom: 6px;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1a1a1a;
+            outline: none;
+            transition: border 0.2s;
+            background: #ffffff;
+        }
+
+        input[type="email"]:focus {
+            border-color: #c62828;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #b71c1c;
+         
+        }
+
+        .message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #e6f4ea;
+            color: #2e7d32;
+        }
+
+        .message.error {
+            background: #fce8e6;
+            color: #c62828;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #888888;
+        }
+
+        .back-link a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>👋 Unsubscribe</h1>
+        <p class="subtitle">Sorry to see you go! Enter your email below and we'll remove you from the digest.</p>
+
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" placeholder="popatlal@example.com" />
+        </div>
+
+        <button onclick="unsubscribe()">Unsubscribe</button>
+        <div class="message" id="message"></div>
+
+        <div class="back-link">
+            Changed your mind? <a href="/">Subscribe again</a>
+        </div>
+    </div>
+
+    <script>
+        async function unsubscribe() {
+            const email = document.getElementById("email").value.trim();
+
+            if (!email) {
+                showMessage("Please enter your email.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/unsubscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message, "success");
+                } else {
+                    showMessage(data.error, "error");
+                }
+            } catch (error) {
+                showMessage("Something went wrong. Please try again.", "error");
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById("message");
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            msg.style.display = "block";
+        }
+    </script>
+</body>
+</html>
