@@ -2,12 +2,17 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from supabase import create_client
+from flask import Flask, request, jsonify, render_template
 import os
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
